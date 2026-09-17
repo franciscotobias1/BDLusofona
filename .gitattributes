@@ -1,0 +1,46 @@
+# ---------------------------------------------------------------------------
+# Line-ending policy: LF everywhere in the repository.
+#
+# The imported seed scripts arrived mixed — 01..04 (HR) were LF, 05..08
+# (BikeStores, from sqlservertutorial.net) were CRLF. Two concrete failures
+# that causes:
+#   * a .sh file with CRLF dies inside the container with the famously
+#     unhelpful "\r: command not found"
+#   * a batch separator written as "GO\r" is not recognised as GO by every
+#     sqlcmd version, so a script silently runs as one giant batch
+#
+# The desktop Dockerfile worked around this with `sed -i 's/\r$//'`.
+# Normalising here removes the need for that entirely.
+#
+# Students on Windows: Git converts to LF on commit and leaves LF in the
+# working tree. VS Code is pinned to LF in devcontainer.json. Nothing to do.
+# ---------------------------------------------------------------------------
+
+# Default: detect text, always store and check out with LF
+* text=auto eol=lf
+
+# Be explicit for the file types that actually break
+*.sql   text eol=lf
+*.sh    text eol=lf
+*.yml   text eol=lf
+*.yaml  text eol=lf
+*.json  text eol=lf
+*.md    text eol=lf
+Dockerfile text eol=lf
+
+# Data files for BULK INSERT: LF, and SQL Server should see UTF-8
+*.csv   text eol=lf working-tree-encoding=UTF-8
+*.tsv   text eol=lf
+*.json  text eol=lf
+
+# Never let Git touch these
+*.bak   binary
+*.mdf   binary
+*.ldf   binary
+*.ndf   binary
+*.png   binary
+*.jpg   binary
+*.pdf   binary
+
+# Keep generated/vendored SQL out of diff noise and language stats
+db/init/0[5-8]-BS-*.sql linguist-vendored

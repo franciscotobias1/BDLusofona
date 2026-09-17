@@ -1,0 +1,97 @@
+# ---------------------------------------------------------------------------
+# Codespaces topology.
+# ---------------------------------------------------------------------------
+
+services:
+  workspace:
+    image: mcr.microsoft.com/devcontainers/base:ubuntu-22.04
+    volumes:
+      - ../..:/workspaces:cached
+    command: sleep infinity
+    environment:
+      # Single source of truth for the password, shared with the db service.
+      MSSQL_SA_PASSWORD: "${MSSQL_SA_PASSWORD:-Ulht#db26!Class}"
+      MSSQL_HOST: db
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - db26
+
+  db:
+    # Pre-built image pulled from GHCR: stock SQL Server 2022 + mssql-tools18.
+    # Building on the student's machine would add several minutes to first
+    # launch. See .github/workflows/build-image.yml.
+    #
+    # Org namespace. GHCR paths must be entirely lower-case — this org name
+    # already is, which is one reason to host here rather than under a
+    # personal account whose name contains capitals.
+    # Must match IMAGE_BASENAME + VERSION in .github/workflows/build-image.yml.
+    image: "${MSSQL_IMAGE:-ghcr.io/ulht-deisi-db-26-27/ulht-db26-class:1.2.0}"
+
+    # Fallback for local testing before the image is published. Uncomment to
+    # build from ../image instead of pulling.
+    # build:
+    #   context: ../image
+    #   dockerfile: Dockerfile
+
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_PID: "Developer"
+      MSSQL_SA_PASSWORD: "${MSSQL_SA_PASSWORD:-Ulht#db26!Class}"
+
+      # ------------------------------------------------------------------
+      # COLLATION — read this before first launch.
+      # This is applied ONLY when the data volume is empty. Changing it later
+      # means deleting the volume (or the whole codespace) and re-seeding.
+      # Latin1_General_CI_AS  = case-insensitive, ACCENT-SENSITIVE
+      #                         ('a' <> 'á'), matches the container default's
+      #                         behaviour for Portuguese text.
+      # Latin1_General_CI_AI  = also accent-INsensitive ('a' = 'á'), which is
+      #                         usually friendlier for student LIKE queries.
+      # Confirm against your desktop instance with:
+      #   SELECT SERVERPROPERTY('Collation');
+      # ------------------------------------------------------------------
+      MSSQL_COLLATION: "${MSSQL_COLLATION:-Latin1_General_CI_AS}"
+
+      TZ: "Europe/Lisbon"
+
+    ports:
+      - "1433:1433"
+
+    volumes:
+      # One named volume for the whole SQL Server state directory. This covers
+      # what ./data, ./log and ./secrets did on the desktop, in one mount.
+      # Survives codespace stop/start. Does NOT survive "Rebuild Container" —
+      # that is fine, the seed scripts are the source of truth.
+      - mssql-data:/var/opt/mssql
+
+      # Read-only view of the repo's db/ folder, so BULK INSERT / OPENROWSET
+      # can reach CSV or JSON files. Those read SERVER-side, so the files must
+      # be visible inside THIS container, not the workspace one.
+      - ../db:/db:ro
+
+    healthcheck:
+      # mssql-tools18 always ships in our image, so the desktop version's
+      # tools18-or-tools fallback is no longer needed.
+      # -C = trust self-signed cert, -b = non-zero exit on SQL error.
+      test:
+        [
+          "CMD-SHELL",
+          "/opt/mssql-tools18/bin/sqlcmd -C -b -l 5 -S localhost -U sa -P \"$$MSSQL_SA_PASSWORD\" -Q 'SELECT 1' >/dev/null 2>&1 || exit 1"
+        ]
+      interval: 5s
+      timeout: 10s
+      retries: 60
+      start_period: 60s
+
+    restart: unless-stopped
+
+    networks:
+      - db26
+
+volumes:
+  mssql-data:
+
+networks:
+  db26:

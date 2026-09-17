@@ -1,0 +1,32 @@
+# ---------------------------------------------------------------------------
+# The desktop environment kept ./data, ./log and ./secrets as bind-mount
+# targets. In Codespaces those are a named volume and a Codespaces secret,
+# so nothing database-shaped should ever reach the repository.
+# ---------------------------------------------------------------------------
+
+# SQL Server state — must never be committed
+data/
+log/
+secrets/
+*.mdf
+*.ldf
+*.ndf
+*.bak
+*.trn
+
+# Local env overrides. The class password lives in .devcontainer/docker-compose.yml
+# on purpose (see README); this is for anyone overriding it locally.
+.env
+.env.local
+*.env
+
+# Editor / OS noise
+.vscode/settings.json
+.idea/
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Query output
+*.rpt
+*.out

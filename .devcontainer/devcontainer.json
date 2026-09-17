@@ -1,0 +1,73 @@
+{
+  "name": "ULHT db26 — SQL Server 2022",
+
+  // Compose brings up two services: `workspace` (where VS Code runs) and `db`.
+  "dockerComposeFile": "docker-compose.yml",
+  "service": "workspace",
+  "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
+
+  // 1433 is forwarded so a LOCAL client (SSMS / Azure Data Studio / DBeaver)
+  // can attach. NOTE: this only works from VS Code Desktop or the `gh` CLI —
+  // the browser editor cannot tunnel raw TCP. See README.
+  "forwardPorts": [1433],
+  "portsAttributes": {
+    "1433": {
+      "label": "SQL Server (TDS)",
+      "onAutoForward": "silent"
+    }
+  },
+
+  // SQL Server needs ~2 GB just to start; 8 GB keeps BikeStores DML comfortable.
+  "hostRequirements": {
+    "cpus": 2,
+    "memory": "8gb",
+    "storage": "32gb"
+  },
+
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-mssql.mssql"
+      ],
+      "settings": {
+        "files.eol": "\n",
+        "mssql.connections": [
+          {
+            "server": "db,1433",
+            "database": "ULHT_DB26",
+            "authenticationType": "SqlLogin",
+            "user": "sa",
+            "password": "",
+            "emptyPasswordInput": false,
+            "savePassword": false,
+            "encrypt": "Mandatory",
+            "trustServerCertificate": true,
+            "profileName": "ULHT_DB26 (HR + Scott)"
+          },
+          {
+            "server": "db,1433",
+            "database": "BikeStores",
+            "authenticationType": "SqlLogin",
+            "user": "sa",
+            "password": "",
+            "emptyPasswordInput": false,
+            "savePassword": false,
+            "encrypt": "Mandatory",
+            "trustServerCertificate": true,
+            "profileName": "BikeStores"
+          }
+        ]
+      }
+    }
+  },
+
+  // Runs once, after the containers are created. Installs sqlcmd in the
+  // workspace container, waits for SQL Server, then seeds both databases.
+  "postCreateCommand": "bash .devcontainer/postCreate.sh",
+
+  // Runs on every start (including after the codespace was stopped).
+  // Cheap no-op if the databases are already there.
+  "postStartCommand": "bash .devcontainer/postStart.sh",
+
+  "remoteUser": "vscode"
+}
