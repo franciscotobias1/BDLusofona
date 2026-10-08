@@ -114,8 +114,11 @@ WHERE s.first_name LIKE 'M%';
 
 SELECT order_id AS ID, order_date AS 'Data'
 FROM sales.orders s  
-WHERE s.order_date BETWEEN '2016-01-01' AND '2016-01-15';
+WHERE s.order_date BETWEEN '2016-01-01' AND '2016-01-15';    
 
 SELECT * 
 FROM sales.orders s  
-WHERE s.customer_id IN (541, 1212, 1326) AND LEFT(order_date, 4) IN (2016, 2017);*/
+WHERE s.customer_id IN (541, 1212, 1326) AND LEFT(order_date, 4) IN (2016, 2017);
+
+SELECT * 
+FROM INFORMATION_SCHEMA.COLUMNS; */
