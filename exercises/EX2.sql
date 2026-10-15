@@ -91,7 +91,18 @@ INSERT INTO events.messages (id) VALUES (11);
 
 
 SELECT * FROM metrics.indicators;
-SELECT * FROM events.messages; */
+SELECT * FROM events.messages; 
+
+SELECT * FROM metrics.indicators;
+
+GO
+
+
+SELECT * FROM events.messages; 
+
+USE BikeStoresAnalytics;
+
+GO
 
 SELECT * FROM metrics.indicators;
 
@@ -99,3 +110,43 @@ GO
 
 
 SELECT * FROM events.messages;
+
+*/
+
+/*
+SELECT customer_id, first_name, last_name, city, state  
+INTO sales.AllCustomers
+FROM sales.customers */
+
+
+/*SELECT * FROM sales.AllCustomers;*/
+
+/*SELECT *
+INTO sales.TexasCustomers
+FROM sales.customers
+WHERE state = 'TX'
+*/
+
+/*SELECT * FROM sales.TexasCustomers
+
+CREATE TABLE sales.clientes (
+
+    first_name VARCHAR(20),
+    last_name VARCHAR(20),
+    state VARCHAR(20)
+)
+
+
+
+INSERT INTO sales.clientes
+SELECT first_name, last_name, state 
+FROM sales.customers
+
+
+SELECT * FROM sales.clientes
+
+*/
+
+USE BikeStores;
+
+
