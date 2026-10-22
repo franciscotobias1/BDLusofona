@@ -1,6 +1,5 @@
-/* USE BikeStores;
 
-SELECT * FROM sys.schemas; 
+/*SELECT * FROM sys.schemas; 
 
 CREATE DATABASE BikeStoresPlus;*/
 
@@ -51,5 +50,8 @@ VALUES (12, 'AGUEDA');
 
 
 
+
+
+ USE BikeStores;
 
 
